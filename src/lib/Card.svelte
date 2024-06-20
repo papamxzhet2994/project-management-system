@@ -8,7 +8,7 @@
 </script>
 
 <section class="font-[JetBrains Mono] mb-4 cursor-grab" draggable="true" on:dragstart on:dragend>
-    <div class="border-solid border border-neutral-800 px-3 pt-2 rounded bg-black text-neutral-500 max-w-[350px] w-auto">
+    <div class="border-solid border border-neutral-800 px-3 pt-1 rounded bg-black text-neutral-500 min-w-[350px] max-w-[350px]">
         <p class="mb-2 text-[10px]">T-{task.id}</p>
         <h1 class="text-white flex-wrap mb-2 text">{task.title}</h1>
         <div class="container flex flex-wrap font-[JetBrains Mono]">
@@ -24,11 +24,11 @@
             {/if}
             {#if task.assignee}
                 <div class="flex h-6 text-[12px]">
-                    <img src={task.assignee.icon} alt="assignee-icon">
+                    <img src={task.assignee.icon} alt="assignee-icon" class="mr-2">
                 </div>
             {/if}
             {#if task.label}
-                <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 ml-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
+                <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2  mb-2 font-mono text-[12px] font-[JetBrains Mono]">
                     <img src={task.label.icon} alt="label-icon" class="mr-1">{task.label.label}
                 </div>
             {/if}
@@ -40,6 +40,11 @@
             {#if task.endDate}
                 <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
                     <img src="./Icon-date-end.svg" alt="date-end" class="w-4 mr-1">{formatDate(task.endDate)}
+                </div>
+            {/if}
+            {#if task.parent}
+                <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
+                    <img src="./Icon-parent-issue.svg" alt="parent-icon" class="w-4 mr-1">T-{task.parent.id}
                 </div>
             {/if}
         </div>

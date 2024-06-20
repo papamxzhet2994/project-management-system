@@ -2,12 +2,12 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import Dropdown from './Dropdown.svelte';
+    import { tasks, statuses, isModalOpen, modalColumn, addTask } from '../lib/store';
 
     export let isOpen = false;
     export let onClose = () => {
         isOpen = false;
     };
-    export let modalColumn = null;
 
     const dispatch = createEventDispatcher();
 
@@ -20,14 +20,7 @@
     let label = null;
     let startDate = new Date().toISOString().slice(0, 10);
     let endDate = new Date().toISOString().slice(0, 10);
-
-    let statuses = [
-        { value: 'backlog', label: 'Backlog', icon: './Icon-backlog.svg' },
-        { value: 'open', label: 'Открыто', icon: './Icon-open.svg' },
-        { value: 'in_progress', label: 'В процессе', icon: './Icon-in_progress.svg' },
-        { value: 'done', label: 'Завершен', icon: './Icon-done.svg' },
-        { value: 'cancelled', label: 'Отменен', icon: './Icon-cancelled.svg' }
-    ];
+    let parent = null;
 
     let priorities = [
         { value: 'low', label: 'Low', icon: './Priority.svg' },
@@ -46,6 +39,11 @@
         { value: 'discussion', label: 'Discussion', icon: './Icon-discussion.svg' },
         { value: 'feature', label: 'Feature', icon: './Icon-feature.svg' }
     ];
+
+    let issues = [];
+    tasks.subscribe(value => {
+        issues = value;
+    });
 
     const selectStatus = (event) => {
         status = event.detail;
@@ -67,6 +65,11 @@
         openDropdown = null;
     };
 
+    const selectParent = (event) => {
+        parent = event.detail.value;
+        openDropdown = null;
+    };
+
     const saveTask = () => {
         if (!title.trim() || !description.trim()) {
             alert("Title and description cannot be empty");
@@ -76,12 +79,13 @@
         const task = { 
             title, 
             description, 
-            status, 
+            status: { ...status },
             priority, 
             assignee, 
             label,
             startDate,
-            endDate 
+            endDate,
+            parent 
         };
         console.log("Task saved:", task);
         dispatch('saveTask', task);
@@ -104,14 +108,14 @@
 </script>
 
 {#if isOpen}
-    <section class="fixed  inset-0 overflow-y-auto flex items-center justify-center text-neutral-500 w-[100vw]" on:click={e => e.target === e.currentTarget && onClose()} transition:fade={{ duration: 500 }}>
+    <section class="fixed inset-0 overflow-y-auto flex items-center justify-center text-neutral-500 w-[100vw]" on:click={e => e.target === e.currentTarget && onClose()} transition:fade={{ duration: 500 }}>
         <div class="bg-black p-4 rounded-lg border-neutral-800 border z-10" transition:fade={{ duration: 500 }} on:click|stopPropagation={stopPropagation}>
             <form on:submit|preventDefault={saveTask}>
                 <div class="mb-4">
-                    <input type="text" id="title" bind:value={title} class="mt-1 block w-full bg-black border border-neutral-800 rounded-md shadow-sm py-2 px-3" placeholder="Title">
+                    <input type="text" id="title" bind:value={title} class="mt-1 block w-full bg-black border border-neutral-800 rounded-md shadow-sm py-2 px-3 placeholder:text-neutral-500 text-lg" placeholder="Title">
                 </div>
                 <div class="mb-4">
-                    <textarea id="description" bind:value={description} rows="4" class="mt-1 block w-full bg-black border border-neutral-800 rounded-md shadow-sm py-2 px-3" placeholder="Write description..."></textarea>
+                    <textarea id="description" bind:value={description} rows="4" class="mt-1 block w-full bg-black border border-neutral-800 rounded-md shadow-sm py-2 px-3 resize-none placeholder:text-neutral-500" placeholder="Write description..."></textarea>
                 </div>
                 <div class="flex flex-wrap">
                     <div class="flex">
@@ -154,21 +158,27 @@
                             <Dropdown items={labels} on:select={selectLabel}/>
                         {/if}
                     </div>
-                    <!--выбор даты пока то тоже временный, т.к будут свои календарики вроде и в них надо будет выбирать даты-->
                     <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
                         <img src="./Icon-date.svg" alt="date-icon" class="w-4 mr-1"><input type="date" bind:value={startDate} class="bg-black">
                     </div>
                     <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
                         <img src="./Icon-date-end.svg" alt="date-end" class="w-4 mr-1"><input type="date" bind:value={endDate} class="bg-black">
                     </div>
-                    <!--хз пока что-->
+                    <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
+                        <button type="button" on:click={() => openDropdown = openDropdown === 'parent' ? null : 'parent'} class="flex items-center">
+                            <img src="./Icon-parent-issue.svg" alt="parent-icon" class="w-4 mr-1">{parent ? `T-${parent.id}` : 'Parent issue'}
+                        </button>
+                        {#if openDropdown === 'parent'}
+                            <Dropdown items={issues.map(issue => ({ label: `T-${issue.id}`, value: issue }))} on:select={selectParent}/>
+                        {/if}
+                    </div>
                     <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
                         <img src="./Icon-attachment.svg" alt="attachment-icon" class="w-4 mr-1">Attachment
                     </div>
                 </div>
                 <div class="mt-2">
                     <div class="flex border border-b-0 border-r-0 border-l-0 border-neutral-800 w-full px-2 py-1 mr-2 mb-2 justify-end items-center">
-                        <button type="submit" class="mt-2 relative text-neutral-50 font-jetbrains font-extrabold text-sm bg-black border border-neutral-800 cursor-pointer px-6 py-2 transition-all duration-500 hover:rounded-tl-xl before:absolute before:bg-blue-700 before:z-10 before:h-3.5 before:w-3.5 before:right-[-6px] before:bottom-[-6px] hover:after:absolute after:bg-blue-700 after:opacity-0 after:rounded-xl after:h-full after:w-full after:right-[-6px] after:bottom-[-6px] after:-z-10 after:transition-all after:duration-500  hover:after:opacity-30">
+                        <button type="submit" class="mt-2 relative text-neutral-50 font-jetbrains font-extrabold text-sm bg-black border border-neutral-800 cursor-pointer px-6 py-2 transition-all duration-500 hover:rounded-tl-xl before:absolute before:bg-blue-700 before:z-10 before:h-3.5 before:w-3.5 before:right-[-6px] before:bottom-[-6px] hover:after:absolute after:bg-blue-700 after:opacity-0 after:rounded-xl after:h-full after:w-full after:right-[-6px] after:bottom-[-6px] after:-z-10 after:transition-all after:duration-500 hover:after:opacity-30">
                             Сохранить
                         </button>
                     </div>

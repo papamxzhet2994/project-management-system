@@ -2,6 +2,7 @@
 
 <script>
     import { createEventDispatcher } from 'svelte';
+    import { tasks, modalColumn, addTask, isModalOpen } from '../lib/store';
     export let items = [];
     export let selectedItem = null;
     const dispatch = createEventDispatcher();
@@ -17,7 +18,7 @@
             {#if item.icon}
                 <img src={item.icon} alt="" class="icon">
             {/if}
-            {item.label}
+            {item.id ? item.id : item.label}
         </div>
     {/each}
 </div>
