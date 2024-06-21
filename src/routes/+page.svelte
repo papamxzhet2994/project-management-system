@@ -48,7 +48,7 @@
         <section role="application" class="{ $columns[column] ? 'collapsed' : 'expanded' } { $isExpandedGap ? 'mx-4' : 'mx-1' } group"
             on:drop={(event) => handleDrop(event, column)}
             on:dragover={handleDragOver}>
-            <div class="flex justify-between mb-3 max-w-[350px] column-header { $columns[column] ? 'collapsed-header' : '' }" >
+            <div class="flex justify-between mb-3 w-[350px] column-header { $columns[column] ? 'collapsed-header' : '' }" >
                 <div class="flex justify-between items-center">
                         <img src={`./Icon-${column}.svg`} alt={`${column}-icon`} class="mr-3">
                         <h1 class="text-white flex flex-wrap text-base font-medium">
