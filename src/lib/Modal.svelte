@@ -2,12 +2,13 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import Dropdown from './Dropdown.svelte';
-    import { tasks, statuses, isModalOpen, modalColumn, addTask } from '../lib/store';
+    import { tasks, statuses } from '../lib/store';
 
     export let isOpen = false;
     export let onClose = () => {
         isOpen = false;
     };
+    export let modalColumn = null;
 
     const dispatch = createEventDispatcher();
 
@@ -108,7 +109,7 @@
 </script>
 
 {#if isOpen}
-    <section class="fixed inset-0 overflow-y-auto flex items-center justify-center text-neutral-500 w-[100vw]" on:click={e => e.target === e.currentTarget && onClose()} transition:fade={{ duration: 500 }}>
+    <section class="fixed inset-0 overflow-y-auto flex items-center justify-center text-neutral-500" on:click={e => e.target === e.currentTarget && onClose()} transition:fade={{ duration: 500 }}>
         <div class="bg-black p-4 rounded-lg border-neutral-800 border z-10" transition:fade={{ duration: 500 }} on:click|stopPropagation={stopPropagation}>
             <form on:submit|preventDefault={saveTask}>
                 <div class="mb-4">
