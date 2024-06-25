@@ -88,7 +88,6 @@
             endDate,
             parent 
         };
-        console.log("Task saved:", task);
         dispatch('saveTask', task);
         onClose();
     };
@@ -103,86 +102,100 @@
         }
     });
 
+    function resetFields() {
+        title = "";
+        description = "";
+        status = null;
+        priority = null;
+        assignee = null;
+        label = null;
+        startDate = new Date().toISOString().slice(0, 10);
+        endDate = new Date().toISOString().slice(0, 10);
+        parent = null;
+    }
+
+    $: if (isOpen) {
+        resetFields();
+    }
+
     function stopPropagation(event) {
         event.stopPropagation();
     }
 </script>
 
+<style>
+    .modal-text {
+        @apply block w-full bg-black border border-neutral-800 rounded-lg shadow-sm py-0.5 px-2 placeholder:text-neutral-600;
+    }
+    .item-tag {
+        @apply flex items-center border-solid border border-neutral-800 w-auto px-1 h-[18px] rounded;
+    }
+    .item {
+        @apply flex items-start;
+    }
+</style>
+
 {#if isOpen}
-    <section class="fixed inset-0 overflow-y-auto flex items-center justify-center text-neutral-500" on:click={e => e.target === e.currentTarget && onClose()} transition:fade={{ duration: 500 }}>
-        <div class="bg-black p-4 rounded-lg border-neutral-800 border z-10" transition:fade={{ duration: 500 }} on:click|stopPropagation={stopPropagation}>
+    <section class="fixed inset-0 mx-auto flex items-center justify-center text-neutral-500 max-w-[800px]" on:click={e => e.target === e.currentTarget && onClose()} transition:fade={{ duration: 500 }}>
+        <div class="bg-black rounded-lg border-neutral-800 border z-10" transition:fade={{ duration: 500 }} on:click|stopPropagation={stopPropagation}>
             <form on:submit|preventDefault={saveTask}>
-                <div class="mb-4">
-                    <input type="text" id="title" bind:value={title} class="mt-1 block w-full bg-black border border-neutral-800 rounded-md shadow-sm py-2 px-3 placeholder:text-neutral-500 text-lg" placeholder="Title">
-                </div>
-                <div class="mb-4">
-                    <textarea id="description" bind:value={description} rows="4" class="mt-1 block w-full bg-black border border-neutral-800 rounded-md shadow-sm py-2 px-3 resize-none placeholder:text-neutral-500" placeholder="Write description..."></textarea>
-                </div>
-                <div class="flex flex-wrap">
-                    <div class="flex">
-                        <button type="button" on:click={() => openDropdown = openDropdown === 'status' ? null : 'status'} class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
-                            <div class="flex items-center">
-                                <img src={status ? status.icon : './Icon-backlog.svg'} alt="status-icon" class="w-4 mr-2">{status ? status.label : 'Status'}
-                            </div>
+                <div class="flex flex-col gap-2 px-4 pt-4 mb-2">
+                    <input type="text" id="title" bind:value={title} class="modal-text text-lg" placeholder="Title">
+                    <textarea id="description" bind:value={description} rows="4" class="modal-text text-sm resize-none h-[100px]" placeholder="Write description..."></textarea>
+                    <div class="flex flex-wrap gap-2 mb-2 text-xs font-normal font-[JetBrains Mono]">
+                        <button type="button" class="item-tag" on:click={() => openDropdown = openDropdown === 'status' ? null : 'status'}>
+                            <img src={status ? status.icon : './Icon-backlog.svg'} alt="status-icon" class="w-3 mr-1">{status ? status.label : 'Status'}
                         </button>
                         {#if openDropdown === 'status'}
                             <Dropdown items={statuses} on:select={selectStatus}/>
                         {/if}
-                    </div>
-                    <div class="flex items-center mb-2 text-[12px]">
-                        <button type="button" on:click={() => openDropdown = openDropdown === 'priority' ? null : 'priority'}>
-                            <div class="flex items-center">
-                                <img src={priority ? priority.icon : './Priority.svg'} alt="priority-icon" class="mr-2">{priority ? priority.label : 'Priority'}
-                            </div>
-                        </button>
-                        {#if openDropdown === 'priority'}
-                            <Dropdown items={priorities} on:select={selectPriority}/>
-                        {/if}
-                    </div>
-                    <div class="flex items-center">
-                        <button type="button" on:click={() => openDropdown = openDropdown === 'assignee' ? null : 'assignee'}>
-                            <div class="flex items-center mb-2 ml-2 mr-2 text-[12px]">
-                                <img src={assignee ? assignee.icon : './Assignees.svg'} alt="assignee-icon" class="mr-2">{assignee ? assignee.label : 'Assignee'}
-                            </div>
-                        </button>
-                        {#if openDropdown === 'assignee'}
-                            <Dropdown items={assignees} on:select={selectAssignee}/>
-                        {/if}
-                    </div>
-                    <div class="flex">
-                        <button type="button" on:click={() => openDropdown = openDropdown === 'label' ? null : 'label'} class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[14px] font-[JetBrains Mono]">
-                            <div class="flex items-center">
-                                <img src={label ? label.icon : './Icon-add.svg'} alt="label-icon" class="mr-2">{label ? label.label : 'Label'}
-                            </div>
-                        </button>
-                        {#if openDropdown === 'label'}
-                            <Dropdown items={labels} on:select={selectLabel}/>
-                        {/if}
-                    </div>
-                    <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
-                        <img src="./Icon-date.svg" alt="date-icon" class="w-4 mr-1"><input type="date" bind:value={startDate} class="bg-black">
-                    </div>
-                    <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
-                        <img src="./Icon-date-end.svg" alt="date-end" class="w-4 mr-1"><input type="date" bind:value={endDate} class="bg-black">
-                    </div>
-                    <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
-                        <button type="button" on:click={() => openDropdown = openDropdown === 'parent' ? null : 'parent'} class="flex items-center">
-                            <img src="./Icon-parent-issue.svg" alt="parent-icon" class="w-4 mr-1">{parent ? `T-${parent.id}` : 'Parent issue'}
-                        </button>
-                        {#if openDropdown === 'parent'}
-                            <Dropdown items={issues.map(issue => ({ label: `T-${issue.id}`, value: issue }))} on:select={selectParent}/>
-                        {/if}
-                    </div>
-                    <div class="flex items-center border-solid border border-neutral-800 w-auto px-1 h-6 rounded mr-2 mb-2 font-mono text-[12px] font-[JetBrains Mono]">
-                        <img src="./Icon-attachment.svg" alt="attachment-icon" class="w-4 mr-1">Attachment
+                        <div class="item">
+                            <button type="button" class="flex items-center" on:click={() => openDropdown = openDropdown === 'priority' ? null : 'priority'}>
+                                    <img src={priority ? priority.icon : './Priority.svg'} alt="priority-icon" class="w-4.5 mr-1">{priority ? priority.label : 'Priority'}
+                            </button>
+                            {#if openDropdown === 'priority'}
+                                <Dropdown items={priorities} on:select={selectPriority}/>
+                            {/if}
+                        </div>
+                        <div class="item">
+                            <button type="button" class="flex items-center" on:click={() => openDropdown = openDropdown === 'assignee' ? null : 'assignee'}>
+                                    <img src={assignee ? assignee.icon : './Assignees.svg'} alt="assignee-icon" class="w-4.5 mr-1">{assignee ? assignee.label : 'Assignee'}
+                            </button>
+                            {#if openDropdown === 'assignee'}
+                                <Dropdown items={assignees} on:select={selectAssignee}/>
+                            {/if}
+                        </div>
+                        <div class="item">
+                            <button type="button" class="item-tag" on:click={() => openDropdown = openDropdown === 'label' ? null : 'label'}>
+                                <img src={label ? label.icon : './Action-Icon2.svg'} alt="label-icon" class="w-2 mr-1">{label ? label.label : 'Label'}
+                            </button>
+                            {#if openDropdown === 'label'}
+                                <Dropdown items={labels} on:select={selectLabel}/>
+                            {/if}
+                        </div>
+                        <div class="item-tag">
+                            <img src="./Icon-date.svg" alt="date-icon" class="w-3 mr-1"><input type="date" bind:value={startDate} class="bg-black">
+                        </div>
+                        <div class="item-tag">
+                            <img src="./Icon-date-end.svg" alt="date-end" class="w-3 mr-1"><input type="date" bind:value={endDate} class="bg-black">
+                        </div>
+                        <div class="item">
+                            <button type="button" class="item-tag" on:click={() => openDropdown = openDropdown === 'parent' ? null : 'parent'}>
+                                <img src="./Icon-parent-issue.svg" alt="parent-icon" class="w-3 mr-1">{parent ? `T-${parent.id}` : 'Parent issue'}
+                            </button>
+                            {#if openDropdown === 'parent'}
+                                <Dropdown items={issues.map(issue => ({ label: `T-${issue.id}`, value: issue }))} on:select={selectParent}/>
+                            {/if}
+                        </div>
+                        <div class="item-tag">
+                            <img src="./Icon-attachment.svg" alt="attachment-icon" class="w-3 mr-1">Attachment
+                        </div>
                     </div>
                 </div>
-                <div class="mt-2">
-                    <div class="flex border border-b-0 border-r-0 border-l-0 border-neutral-800 w-full px-2 py-1 mr-2 mb-2 justify-end items-center">
-                        <button type="submit" class="mt-2 relative text-neutral-50 font-jetbrains font-extrabold text-sm bg-black border border-neutral-800 cursor-pointer px-6 py-2 transition-all duration-500 hover:rounded-tl-xl before:absolute before:bg-blue-700 before:z-10 before:h-3.5 before:w-3.5 before:right-[-6px] before:bottom-[-6px] hover:after:absolute after:bg-blue-700 after:opacity-0 after:rounded-xl after:h-full after:w-full after:right-[-6px] after:bottom-[-6px] after:-z-10 after:transition-all after:duration-500 hover:after:opacity-30">
-                            Сохранить
-                        </button>
-                    </div>
+                <div class="flex border border-b-0 border-r-0 border-l-0 pt-4 pb-5 px-5 border-neutral-800 w-full justify-end items-center">
+                    <button type="submit" class="relative text-neutral-50 font-jetbrains font-extrabold text-sm bg-black border border-neutral-800 cursor-pointer px-6 py-2 transition-all duration-500 hover:rounded-tl-xl before:absolute before:bg-blue-700 before:z-10 before:h-3.5 before:w-3.5 before:right-[-6px] before:bottom-[-6px] hover:after:absolute after:bg-blue-700 after:opacity-0 after:rounded-xl after:h-full after:w-full after:right-[-6px] after:bottom-[-6px] after:-z-10 after:transition-all after:duration-500 hover:after:opacity-30">
+                        Сохранить
+                    </button>
                 </div>
             </form>
         </div>

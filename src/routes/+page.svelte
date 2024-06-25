@@ -10,7 +10,7 @@
 
     columns.subscribe(value => {
         isExpandedGap.set(Object.values(value).every(v => v === false));
-    });
+    });    
 </script>
 
 <style>
