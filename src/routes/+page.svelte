@@ -10,7 +10,7 @@
 
     columns.subscribe(value => {
         isExpandedGap.set(Object.values(value).every(v => v === false));
-    });    
+    });
 </script>
 
 <style>
@@ -49,21 +49,21 @@
             on:dragover={handleDragOver}>
             <div class="flex justify-between mb-3 column-header { $columns[column] ? 'collapsed-header' : '' }">
                 <div class="flex items-center">
-                        <img src={`./Icon-${column}.svg`} alt={`${column}-icon`} class="mr-3">
-                        <h1 class="text-white flex flex-wrap text-base font-medium">
-                            <p class="first-letter:uppercase">{column.slice(0).replace('_', ' ')}</p>
-                        </h1>
-                        <span class="counter text-neutral-500 ml-4 mr-4 text-xs">{$taskCounts[column]}</span>
+                    <img src={`./Icon-${column}.svg`} alt={`${column}-icon`} class="mr-3">
+                    <h1 class="text-white flex flex-wrap text-base font-medium">
+                        <p class="first-letter:uppercase">{column.slice(0).replace('_', ' ')}</p>
+                    </h1>
+                    <span class="counter text-neutral-500 ml-4 mr-4 text-xs">{$taskCounts[column]}</span>
                 </div>
                 <div class="flex items-center gap-4">
-                        <button class="flex w-3.5 h-3.5" on:click={() => toggleColumn(column)}>
-                            <img src={ $columns[column] ? "./Action-Icon1.svg" : "./Action-Icon.svg" } alt="toggle-icon">
-                        </button>
-                        <button class="flex w-3.5 h-3.5" on:click={() => openModal(column)}>
-                            <img src="./Action-Icon2.svg" alt="user-icon">
-                        </button>
-                    </div>
+                    <button class="flex w-3.5 h-3.5" on:click={() => toggleColumn(column)}>
+                        <img src={ $columns[column] ? "./Action-Icon1.svg" : "./Action-Icon.svg" } alt="toggle-icon">
+                    </button>
+                    <button class="flex w-3.5 h-3.5" on:click={() => openModal(column)}>
+                        <img src="./Action-Icon2.svg" alt="user-icon">
+                    </button>
                 </div>
+            </div>
             <div class="card-container { $columns[column] ? 'hidden' : 'visible' }">
                 {#each $tasks.filter(task => task.status?.value === column) as task}
                     <Card {task} on:dragstart={(event) => handleDragStart(event, task)} draggable="true"/>
@@ -76,5 +76,5 @@
             {/if}
         </section>
     {/each}
-    <Modal bind:isOpen={$isModalOpen} bind:column={$modalColumn} on:close={closeModal} on:saveTask={(event) => addTask(event.detail)}/>
+    <Modal bind:isOpen={$isModalOpen} bind:modalColumn={$modalColumn} on:close={closeModal} on:saveTask={(event) => addTask(event.detail)}/>
 </main>

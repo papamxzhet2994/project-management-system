@@ -2,6 +2,7 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import Dropdown from './Dropdown.svelte';
+    import DateInput from './DateInput.svelte';
     import { tasks, statuses } from '../lib/store';
 
     export let isOpen = false;
@@ -19,8 +20,8 @@
     let priority = null;
     let assignee = null;
     let label = null;
-    let startDate = new Date().toISOString().slice(0, 10);
-    let endDate = new Date().toISOString().slice(0, 10);
+    let startDate = new Date();
+    let endDate = new Date();
     let parent = null;
 
     let priorities = [
@@ -80,7 +81,7 @@
         const task = { 
             title, 
             description, 
-            status: { ...status },
+            status: status || { ...statuses.find(s => s.value === modalColumn) },
             priority, 
             assignee, 
             label,
@@ -88,9 +89,23 @@
             endDate,
             parent 
         };
+        console.log("Task saved:", task);
         dispatch('saveTask', task);
+        clearFields();
         onClose();
     };
+
+    function clearFields() {
+        title = "";
+        description = "";
+        status = null;
+        priority = null;
+        assignee = null;
+        label = null;
+        startDate = new Date();
+        endDate = new Date();
+        parent = null;
+    }
 
     $: if (modalColumn) {
         status = statuses.find(s => s.value === modalColumn);
@@ -101,22 +116,6 @@
             status = statuses.find(s => s.value === modalColumn);
         }
     });
-
-    function resetFields() {
-        title = "";
-        description = "";
-        status = null;
-        priority = null;
-        assignee = null;
-        label = null;
-        startDate = new Date().toISOString().slice(0, 10);
-        endDate = new Date().toISOString().slice(0, 10);
-        parent = null;
-    }
-
-    $: if (isOpen) {
-        resetFields();
-    }
 
     function stopPropagation(event) {
         event.stopPropagation();
@@ -174,10 +173,12 @@
                             {/if}
                         </div>
                         <div class="item-tag">
-                            <img src="./Icon-date.svg" alt="date-icon" class="w-3 mr-1"><input type="date" bind:value={startDate} class="bg-black">
+                            <img src="./Icon-date.svg" alt="date-icon" class="w-3 mr-1">
+                            <DateInput bind:selectedDate={startDate} />
                         </div>
                         <div class="item-tag">
-                            <img src="./Icon-date-end.svg" alt="date-end" class="w-3 mr-1"><input type="date" bind:value={endDate} class="bg-black">
+                            <img src="./Icon-date-end.svg" alt="date-end" class="w-3 mr-1">
+                            <DateInput bind:selectedDate={endDate} />
                         </div>
                         <div class="item">
                             <button type="button" class="item-tag" on:click={() => openDropdown = openDropdown === 'parent' ? null : 'parent'}>
@@ -193,7 +194,7 @@
                     </div>
                 </div>
                 <div class="flex border border-b-0 border-r-0 border-l-0 pt-4 pb-5 px-5 border-neutral-800 w-full justify-end items-center">
-                    <button type="submit" class="relative text-neutral-50 font-jetbrains font-extrabold text-sm bg-black border border-neutral-800 cursor-pointer px-6 py-2 transition-all duration-500 hover:rounded-tl-xl before:absolute before:bg-blue-700 before:z-10 before:h-3.5 before:w-3.5 before:right-[-6px] before:bottom-[-6px] hover:after:absolute after:bg-blue-700 after:opacity-0 after:rounded-xl after:h-full after:w-full after:right-[-6px] after:bottom-[-6px] after:-z-10 after:transition-all after:duration-500 hover:after:opacity-30">
+                    <button type="submit" class="relative text-neutral-50 font-jetbrains font-extrabold text-sm bg-black border border-neutral-800 cursor-pointer px-6 py-2 transition-all duration-500 hover:rounded-tl-xl before:absolute before:bg-blue-700 before:z-0 before:h-3.5 before:w-3.5 before:right-[-6px] before:bottom-[-6px] hover:after:absolute after:bg-blue-700 after:opacity-0 after:rounded-xl after:h-full after:w-full after:right-[-6px] after:bottom-[-6px] after:-z-10 after:transition-all after:duration-500 hover:after:opacity-30">
                         Сохранить
                     </button>
                 </div>
